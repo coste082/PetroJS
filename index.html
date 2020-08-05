@@ -1,7 +1,33 @@
 <head>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="myDiv" style="width:600px; height:100%;"></div>
+  <section class="container">
+    <div id="controls">
+      <em>Controls</em> <br />
+      <form id="ViewSettings">
+        <label for="startDepth">Start Depth: </label>
+        <input
+          type="text"
+          class="text-input"
+          id="startDepth"
+          name="startDepth"
+          value="0"
+        /><br />
+        <label for="zoomLevel">Zoom Level: </label>
+        <input
+          type="text"
+          class="text-input"
+          id="zoomLevel"
+          name="zoomLevel"
+          value="50"
+        />
+        <input type="button" onclick="refreshView()" value="Refresh" />
+      </form>
+    </div>
+
+    <div id="myDiv"></div>
+  </section>
   <script src="script.js"></script>
 </body>
