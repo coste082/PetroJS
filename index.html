@@ -1,12 +1,15 @@
 <head>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <link rel="stylesheet" href="style.css" />
+  <title>Log viewer+</title>
 </head>
 <body>
   <section class="container">
     <div id="controls">
       <em>Controls</em> <br />
       <form id="ViewSettings">
+        <label for="file-input" id="file-input-label">Upload LAS</label>
+        <input type="file" id="file-input" accept="text/plain" />
         <label for="startDepth">Start Depth: </label>
         <input
           type="text"
@@ -23,7 +26,11 @@
           name="zoomLevel"
           value="50"
         />
-        <input type="button" onclick="UIController.refreshView()" value="Refresh" />
+        <input
+          type="button"
+          onclick="UIController.refreshView()"
+          value="Refresh"
+        />
       </form>
     </div>
 

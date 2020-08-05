@@ -19,9 +19,6 @@ var syntheticLog = (function () {
   };
 })();
 
-// GENERATE REAL LOG
-
-
 //PLOTLY GENERATION
 var setupPlotly = (function () {
   //set up tracks
@@ -43,7 +40,7 @@ var setupPlotly = (function () {
   var layout = {
     grid: {
       rows: 1,
-      columns: 2,
+      columns: data.length,
     },
     width: data.length * 150,
     dragmode: 'pan',
@@ -56,18 +53,32 @@ var setupPlotly = (function () {
     },
     xaxis: {
       side: 'top',
+      range: [0, 150],
       fixedrange: true,
       title: {
         text: 'GR',
-        x: -20,
       },
     },
     xaxis2: {
       side: 'top',
+      range: [0.45, -0.15],
       fixedrange: true,
       title: {
         text: 'Density',
       },
+    },
+    xaxis3: {
+      side: 'top',
+      range: [0.7, 0.3],
+      titlefont: { color: '#d62728' },
+      tickfont: { color: '#d62728' },
+      anchor: 'free',
+      fixedrange: true,
+      title: {
+        text: 'Neutron',
+      },
+      overlaying: 'x2',
+      position: 1.1,
     },
     margin: {
       l: 70,
@@ -105,9 +116,12 @@ var setupPlotly = (function () {
     plot_bgcolor: '#eeeeee',
     paper_bgcolor: '#eeeeee',
   };
-  Plotly.newPlot('myDiv', data, layout, { displayModeBar: false });
+  Plotly.newPlot('myDiv', data, layout, {
+    displayModeBar: false,
+    responsive: true,
+  });
 
-  return {data:data}
+  return { data: data, layout: layout };
 })();
 
 //UI CONTROLLER
@@ -117,8 +131,8 @@ var UIController = (function () {
 
   function refreshView() {
     var viewSettings = document.getElementById('ViewSettings');
-    var newStart = parseInt(viewSettings.elements[0].value);
-    var newZoom = parseInt(viewSettings.elements[1].value);
+    var newStart = parseInt(viewSettings.elements[1].value);
+    var newZoom = parseInt(viewSettings.elements[2].value);
     if (isNaN(newStart) || isNaN(newZoom) || newStart < 0 || newZoom < 0) {
       alert('Input values need to be positive numbers.');
       return;
@@ -130,9 +144,69 @@ var UIController = (function () {
   }
 
   return {
-    refreshView
-  }
+    refreshView,
+  };
 })();
+
+//LOAD LAS
+document.querySelector('#file-input').addEventListener('change', function () {
+  //files that user has chosen
+  var all_files = this.files;
+  if (all_files.length == 0) {
+    alert('Error: no file selected');
+    return;
+  }
+
+  //get first file
+  var file = all_files[0];
+
+  //verify user selected a LAS file
+  if (file.name.slice(-4) !== '.LAS') {
+    alert('Please select an LAS file.');
+    return;
+  }
+
+  //open file
+  var reader = new FileReader();
+
+  reader.addEventListener('load', function (e) {
+    var text = e.target.result;
+    var jsonLog = las2json(text);
+    var newStart = Math.min(...jsonLog.CURVES['DEPTH']);
+    document.getElementById('startDepth').value = newStart;
+    console.log(jsonLog);
+
+    var trace1 = {
+      x: jsonLog.CURVES['PHID'],
+      y: jsonLog.CURVES['DEPTH'],
+      xaxis: 'x2',
+      type: 'line',
+    };
+    var trace3 = {
+      x: jsonLog.CURVES['PHIN'],
+      y: jsonLog.CURVES['DEPTH'],
+      xaxis: 'x3',
+      line: {
+        color: '#d62728',
+      },
+      type: 'line',
+    };
+
+    var trace2 = {
+      x: jsonLog.CURVES['GR'],
+      y: jsonLog.CURVES['DEPTH'],
+      type: 'line',
+    };
+    var data = [trace1, trace2, trace3];
+    Plotly.newPlot('myDiv', data, setupPlotly.layout, {
+      displayModeBar: false,
+      responsive: true,
+    });
+    UIController.refreshView();
+  });
+
+  reader.readAsText(file);
+});
 
 ////  Function that takes a single LAS text file representing a single well and returns an object variable in JSON format for that well.
 function las2json(onelas) {
@@ -253,10 +327,10 @@ function las2json(onelas) {
     'DESCRIPTION OF MNEMONIC 2': '',
   };
   //// The las file is read as a txt file. It will first be split into seperate strings based on "~" character which occurs at the top of each "block"
-  console.log('onelas = ', onelas);
+  //console.log('onelas = ', onelas);
   var split1 = onelas.split('~');
-  console.log('split1 = ', split1);
-  console.log(split1.length);
+  //console.log('split1 = ', split1);
+  //console.log(split1.length);
   var vers_str = '';
   var well_info_str = '';
   var curve_info_str = '';
@@ -402,11 +476,11 @@ function las2json(onelas) {
     curve_names_array[last_curv_name_position] = curve_names_array[
       last_curv_name_position
     ].replace('\r', '');
-    console.log('0 curve_names_array = ', curve_names_array);
+    //console.log('0 curve_names_array = ', curve_names_array);
     curve_names_array = curve_names_array.slice(1, curve_names_array.length);
     for (i = 0; i < curve_names_array.length; i++) {
       if (curve_names_array[i] !== '') {
-        console.log('0.5 curve_names_array[i] = ', curve_names_array[i]);
+        //onsole.log('0.5 curve_names_array[i] = ', curve_names_array[i]);
         curve_names_array_holder.push(curve_names_array[i]);
         lasjson['CURVES'][curve_names_array[i]] = [];
       }
@@ -420,23 +494,23 @@ function las2json(onelas) {
   for (j = 1; j < curve_str_array.length; j++) {
     var curve_data_line_array = curve_str_array[j].split(' ');
     var counter_of_curve_names = 0;
-    console.log(
-      'curve_data_line_array.length = ',
-      curve_data_line_array.length
-    );
-    console.log('curve_data_line_array = ', curve_data_line_array);
+    //console.log(
+    //  'curve_data_line_array.length = ',
+    // curve_data_line_array.length
+    //);
+    //console.log('curve_data_line_array = ', curve_data_line_array);
     var last_curv_data_line_position = curve_data_line_array.length - 1;
-    console.log(
-      'curve_data_line_array[last_curv_data_line_position] = ',
-      curve_data_line_array[last_curv_data_line_position]
-    );
+    //console.log(
+    //  'curve_data_line_array[last_curv_data_line_position] = ',
+    // curve_data_line_array[last_curv_data_line_position]
+    //);
     curve_data_line_array[last_curv_data_line_position] = curve_data_line_array[
       last_curv_data_line_position
     ].replace('\r', '');
-    console.log(
-      'curve_data_line_array[last_curv_data_line_position] = ',
-      curve_data_line_array[last_curv_data_line_position]
-    );
+    //console.log(
+    //  'curve_data_line_array[last_curv_data_line_position] = ',
+    // curve_data_line_array[last_curv_data_line_position]
+    //);
     for (k = 0; k < curve_data_line_array.length; k++) {
       if (curve_data_line_array[k] !== '') {
         lasjson['CURVES'][
@@ -446,6 +520,6 @@ function las2json(onelas) {
       }
     }
   }
-  console.log(' test: lasjson', lasjson);
+  //console.log(' test: lasjson', lasjson);
   return lasjson;
 }

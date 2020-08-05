@@ -2,11 +2,26 @@ body {
     background-color:#fbd46d;
 }
 
+#file-input-label {
+  width:100px;
+  cursor: pointer;
+  background-color: #336699;
+  color: white;
+  padding: 10px;
+  display: block;
+  margin: 0 auto;
+}
+
+#file-input {
+  display: none;
+}
 .container {
     width: 80%;
     height: 80%;
     background: #222831;
     margin: auto;
+    margin-top: 5%;
+    margin-bottom: 5%;
     padding: 10px;
   }
   
