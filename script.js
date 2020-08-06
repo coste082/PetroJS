@@ -42,10 +42,11 @@ var setupPlotly = (function () {
       rows: 1,
       columns: data.length,
     },
-    width: data.length * 150,
+    width: data.length * 250,
     dragmode: 'pan',
     showlegend: false,
     yaxis: {
+      domain: [0,0.9],
       range: [50, 0],
       title: {
         text: 'Depth',
@@ -53,6 +54,7 @@ var setupPlotly = (function () {
     },
     xaxis: {
       side: 'top',
+      domain: [0,0.33],
       range: [0, 150],
       fixedrange: true,
       title: {
@@ -61,29 +63,45 @@ var setupPlotly = (function () {
     },
     xaxis2: {
       side: 'top',
-      range: [0.45, -0.15],
+      range: [0.60, -0.15],
+      domain: [0.66,1],
       fixedrange: true,
       title: {
         text: 'Density',
+        standoff: 0
+      },
+    },
+    xaxis4: {
+      side: 'top',
+      type: 'log',
+      autorange: true,       //can't define range for log scales??
+      domain: [0.33,0.66],
+      fixedrange: true,
+      title: {
+        text: 'Reistivity',
+        standoff: 0
       },
     },
     xaxis3: {
       side: 'top',
       range: [0.7, 0.3],
+      domain: [0.66,1],
+      automargin:true,
       titlefont: { color: '#d62728' },
       tickfont: { color: '#d62728' },
       anchor: 'free',
       fixedrange: true,
       title: {
         text: 'Neutron',
+        standoff:0
       },
       overlaying: 'x2',
-      position: 1.1,
+      position: 1,
     },
     margin: {
       l: 70,
       r: 30,
-      t: 80,
+      t: 30,
       b: 30,
     },
     shapes: [
@@ -115,6 +133,7 @@ var setupPlotly = (function () {
     ],
     plot_bgcolor: '#eeeeee',
     paper_bgcolor: '#eeeeee',
+    hovermode: 'y'
   };
   Plotly.newPlot('myDiv', data, layout, {
     displayModeBar: false,
@@ -127,7 +146,7 @@ var setupPlotly = (function () {
 //UI CONTROLLER
 var UIController = (function () {
   //Adjust log width based on number of tracks
-  document.getElementById('myDiv').style.width = setupPlotly.data.length * 150;
+  document.getElementById('myDiv').style.width = setupPlotly.data.length * 250;
 
   function refreshView() {
     var viewSettings = document.getElementById('ViewSettings');
@@ -172,17 +191,37 @@ document.querySelector('#file-input').addEventListener('change', function () {
   reader.addEventListener('load', function (e) {
     var text = e.target.result;
     var jsonLog = las2json(text);
+    
+    //download
+    var dl_json = (function() {
+      var element = document.createElement('a')
+      
+      //DOWNLOAD LAS
+      //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
+      //element.setAttribute('download', "log.las")
+
+      //DOWNLOAD JSON
+      //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonLog)))
+      //element.setAttribute('download', "log.json")
+
+
+      element.style.display = 'none'
+      document.body.appendChild(element)
+      element.click()
+      document.body.removeChild(element)
+  })();
+  
     var newStart = Math.min(...jsonLog.CURVES['DEPTH']);
     document.getElementById('startDepth').value = newStart;
     console.log(jsonLog);
 
-    var trace1 = {
+    var densityPhi = {
       x: jsonLog.CURVES['PHID'],
       y: jsonLog.CURVES['DEPTH'],
       xaxis: 'x2',
       type: 'line',
     };
-    var trace3 = {
+    var neutronPhi = {
       x: jsonLog.CURVES['PHIN'],
       y: jsonLog.CURVES['DEPTH'],
       xaxis: 'x3',
@@ -191,13 +230,22 @@ document.querySelector('#file-input').addEventListener('change', function () {
       },
       type: 'line',
     };
+    var resistivity = {
+      x: jsonLog.CURVES['RESD'],
+      y: jsonLog.CURVES['DEPTH'],
+      xaxis: 'x4',
+      line: {
+        color: '#000001',
+      },
+      type: 'line',
+    };
 
-    var trace2 = {
+    var gammaRay = {
       x: jsonLog.CURVES['GR'],
       y: jsonLog.CURVES['DEPTH'],
       type: 'line',
     };
-    var data = [trace1, trace2, trace3];
+    var data = [gammaRay,neutronPhi,densityPhi,resistivity];
     Plotly.newPlot('myDiv', data, setupPlotly.layout, {
       displayModeBar: false,
       responsive: true,
