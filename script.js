@@ -20,133 +20,163 @@ var syntheticLog = (function () {
 })();
 
 //PLOTLY GENERATION
-var setupPlotly = (function () {
+var logPlot = document.getElementById('myDiv'),
   //set up tracks
-  var trace1 = {
+  trace1 = {
     x: syntheticLog.Log().density,
     y: syntheticLog.Log().depth,
     xaxis: 'x2',
     type: 'line',
   };
 
-  var trace2 = {
-    x: syntheticLog.Log().gammaRay,
-    y: syntheticLog.Log().depth,
-    type: 'line',
-  };
-  var data = [trace1, trace2];
+trace2 = {
+  x: syntheticLog.Log().gammaRay,
+  y: syntheticLog.Log().depth,
+  type: 'line',
+};
+data = [trace1, trace2];
 
-  //track layout
-  var layout = {
-    grid: {
-      rows: 1,
-      columns: data.length,
+//track layout
+layout = {
+  grid: {
+    rows: 1,
+    columns: data.length,
+  },
+  width: data.length * 250,
+  dragmode: 'pan',
+  showlegend: false,
+  yaxis: {
+    domain: [0, 0.9],
+    range: [50, 0],
+    title: {
+      text: 'Depth',
     },
-    width: data.length * 250,
-    dragmode: 'pan',
-    showlegend: false,
-    yaxis: {
-      domain: [0,0.9],
-      range: [50, 0],
-      title: {
-        text: 'Depth',
+  },
+  xaxis: {
+    side: 'top',
+    domain: [0, 0.33],
+    range: [0, 150],
+    fixedrange: true,
+    title: {
+      text: 'GR',
+    },
+  },
+  xaxis2: {
+    side: 'top',
+    range: [0.6, -0.15],
+    domain: [0.66, 1],
+    fixedrange: true,
+    title: {
+      text: 'Density',
+      standoff: 0,
+    },
+  },
+  xaxis4: {
+    side: 'top',
+    type: 'log',
+    autorange: true, //can't define range for log scales??
+    domain: [0.33, 0.66],
+    fixedrange: true,
+    title: {
+      text: 'Reistivity',
+      standoff: 0,
+    },
+  },
+  xaxis3: {
+    side: 'top',
+    range: [0.7, 0.3],
+    domain: [0.66, 1],
+    automargin: true,
+    titlefont: { color: '#d62728' },
+    tickfont: { color: '#d62728' },
+    anchor: 'free',
+    fixedrange: true,
+    title: {
+      text: 'Neutron',
+      standoff: 0,
+    },
+    overlaying: 'x2',
+    position: 1,
+  },
+  margin: {
+    l: 70,
+    r: 30,
+    t: 30,
+    b: 30,
+  },
+  shapes: [
+    {
+      type: 'line',
+      xref: 'paper',
+      yref: 'y',
+      x0: 0,
+      y0: 10,
+      x1: 1,
+      y1: 10,
+      line: {
+        color: 'rgb(50,171,96)',
+        width: 3,
       },
     },
-    xaxis: {
-      side: 'top',
-      domain: [0,0.33],
-      range: [0, 150],
-      fixedrange: true,
-      title: {
-        text: 'GR',
-      },
+  ],
+  annotations: [
+    {
+      xref: 'paper',
+      yref: 'y',
+      x: 1.12,
+      xanchor: 'right',
+      y: 10,
+      //yanchor: 'bottom',
+      text: 'Top1',
+      showarrow: false,
     },
-    xaxis2: {
-      side: 'top',
-      range: [0.60, -0.15],
-      domain: [0.66,1],
-      fixedrange: true,
-      title: {
-        text: 'Density',
-        standoff: 0
-      },
-    },
-    xaxis4: {
-      side: 'top',
-      type: 'log',
-      autorange: true,       //can't define range for log scales??
-      domain: [0.33,0.66],
-      fixedrange: true,
-      title: {
-        text: 'Reistivity',
-        standoff: 0
-      },
-    },
-    xaxis3: {
-      side: 'top',
-      range: [0.7, 0.3],
-      domain: [0.66,1],
-      automargin:true,
-      titlefont: { color: '#d62728' },
-      tickfont: { color: '#d62728' },
-      anchor: 'free',
-      fixedrange: true,
-      title: {
-        text: 'Neutron',
-        standoff:0
-      },
-      overlaying: 'x2',
-      position: 1,
-    },
-    margin: {
-      l: 70,
-      r: 30,
-      t: 30,
-      b: 30,
-    },
-    shapes: [
-      {
-        type: 'line',
-        xref: 'paper',
-        yref: 'y',
-        x0: 0,
-        y0: 10,
-        x1: 1,
-        y1: 10,
-        line: {
-          color: 'rgb(50,171,96)',
-          width: 3,
-        },
-      },
-    ],
-    annotations: [
-      {
-        xref: 'paper',
-        yref: 'y',
-        x: 1.12,
-        xanchor: 'right',
-        y: 10,
-        //yanchor: 'bottom',
-        text: 'Top1',
-        showarrow: false,
-      },
-    ],
-    plot_bgcolor: '#eeeeee',
-    paper_bgcolor: '#eeeeee',
-    hovermode: 'y'
-  };
-  Plotly.newPlot('myDiv', data, layout, {
-    displayModeBar: false,
-    responsive: true,
-  });
+  ],
+  plot_bgcolor: '#eeeeee',
+  paper_bgcolor: '#eeeeee',
+  hovermode: 'y',
+};
 
-  return { data: data, layout: layout };
-})();
+Plotly.newPlot('myDiv', data, layout, {
+  displayModeBar: false,
+  responsive: true,
+});
+
+logPlot.on('plotly_click', function (data) {
+  for (var i = 0; i < data.points.length; i++) {
+    var top_name = window.prompt('Please enter top name.');
+    shapes = self.layout.shapes || [];
+    annotations = self.layout.annotations || [];
+    shapes.push({
+      type: 'line',
+      xref: 'paper',
+      yref: 'y',
+      x0: 0,
+      y0: data.points[i].y,
+      x1: 1,
+      y1: data.points[i].y,
+      line: {
+        color: 'rgb(50,171,96)',
+        width: 3,
+      },
+    });
+    annotations.push({
+      xref: 'paper',
+      yref: 'y',
+      x: 0.1,
+      xanchor: 'right',
+      y: data.points[i].y-1.5,
+      //yanchor: 'bottom',
+      text: top_name,
+      showarrow: false,
+    });
+    Plotly.relayout('myDiv', { annotations: annotations, shapes: shapes });
+  }
+});
 
 //UI CONTROLLER
 var UIController = (function () {
   //Adjust log width based on number of tracks
-  document.getElementById('myDiv').style.width = setupPlotly.data.length * 250;
+  document.getElementById('myDiv').style.width = logPlot.data.length * 250;
 
   function refreshView() {
     var viewSettings = document.getElementById('ViewSettings');
@@ -191,11 +221,11 @@ document.querySelector('#file-input').addEventListener('change', function () {
   reader.addEventListener('load', function (e) {
     var text = e.target.result;
     var jsonLog = las2json(text);
-    
+
     //download
-    var dl_json = (function() {
-      var element = document.createElement('a')
-      
+    var dl_json = (function () {
+      var element = document.createElement('a');
+
       //DOWNLOAD LAS
       //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text))
       //element.setAttribute('download', "log.las")
@@ -204,13 +234,12 @@ document.querySelector('#file-input').addEventListener('change', function () {
       //element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(JSON.stringify(jsonLog)))
       //element.setAttribute('download', "log.json")
 
+      element.style.display = 'none';
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+    })();
 
-      element.style.display = 'none'
-      document.body.appendChild(element)
-      element.click()
-      document.body.removeChild(element)
-  })();
-  
     var newStart = Math.min(...jsonLog.CURVES['DEPTH']);
     document.getElementById('startDepth').value = newStart;
     console.log(jsonLog);
@@ -245,8 +274,8 @@ document.querySelector('#file-input').addEventListener('change', function () {
       y: jsonLog.CURVES['DEPTH'],
       type: 'line',
     };
-    var data = [gammaRay,neutronPhi,densityPhi,resistivity];
-    Plotly.newPlot('myDiv', data, setupPlotly.layout, {
+    var data = [gammaRay, neutronPhi, densityPhi, resistivity];
+    Plotly.newPlot('myDiv', data, logPlot.layout, {
       displayModeBar: false,
       responsive: true,
     });
